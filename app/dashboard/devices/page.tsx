@@ -1,0 +1,125 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/current-user";
+import { createClient } from "@/lib/supabase/server";
+import { deviceRedirectUrl, generateQrPngDataUrl } from "@/lib/qr";
+import { Badge } from "@/components/ui/Badge";
+import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
+import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
+import {
+  DESTINATION_LABELS,
+  DEVICE_STATUS_LABELS,
+  DEVICE_STATUS_TONE,
+  DEVICE_VARIANT_LABELS,
+  PLAN_LABELS,
+} from "@/lib/display";
+import { formatDate } from "@/lib/utils";
+
+export const metadata = { title: "Devices" };
+
+export default async function DevicesPage() {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) redirect("/login?next=/dashboard/devices");
+
+  const supabase = createClient();
+  const { data: devices } = await supabase
+    .from("devices")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: true });
+
+  const deviceIds = (devices ?? []).map((d) => d.id);
+  const scanCounts = new Map<string, number>();
+
+  if (deviceIds.length > 0) {
+    await Promise.all(
+      deviceIds.map(async (id) => {
+        const { count } = await supabase
+          .from("scans")
+          .select("id", { count: "exact", head: true })
+          .eq("device_id", id);
+        scanCounts.set(id, count ?? 0);
+      }),
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-ink-900">Devices</h1>
+        <Link href="/shop" className="btn-secondary">
+          Add another ReviewTap
+        </Link>
+      </div>
+
+      {!devices || devices.length === 0 ? (
+        <div className="card mt-6 flex flex-col items-center gap-3 py-16 text-center">
+          <p className="text-sm text-gray-500">You don&apos;t have any ReviewTap devices yet.</p>
+          <Link href="/shop" className="btn-primary">
+            Get your ReviewTap
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {await Promise.all(
+            devices.map(async (device) => {
+              const url = deviceRedirectUrl(device.public_id);
+              const qrDataUrl = await generateQrPngDataUrl(url);
+              return (
+                <div key={device.id} className="card flex gap-5">
+                  <div className="shrink-0 overflow-hidden rounded-xl border border-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={qrDataUrl}
+                      alt={`QR code for ${device.name}`}
+                      width={104}
+                      height={104}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold text-ink-900">{device.name}</p>
+                        <p className="text-xs text-gray-400">
+                          {device.public_id} · {DEVICE_VARIANT_LABELS[device.variant]} ·{" "}
+                          {PLAN_LABELS[device.plan]} plan
+                        </p>
+                      </div>
+                      <Badge tone={DEVICE_STATUS_TONE[device.status]}>
+                        {DEVICE_STATUS_LABELS[device.status]}
+                      </Badge>
+                    </div>
+
+                    <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                      <dt className="text-gray-400">Destination</dt>
+                      <dd className="text-ink-900">
+                        {device.plan === "PRO"
+                          ? `${device.destinations.filter((d) => d.enabled).length} platforms (chooser)`
+                          : DESTINATION_LABELS[device.destination_type]}
+                      </dd>
+                      <dt className="text-gray-400">Total scans</dt>
+                      <dd className="text-ink-900">{scanCounts.get(device.id) ?? 0}</dd>
+                      <dt className="text-gray-400">Created</dt>
+                      <dd className="text-ink-900">{formatDate(device.created_at)}</dd>
+                    </dl>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link href={`/dashboard/devices/${device.id}`} className="btn-primary">
+                        Edit
+                      </Link>
+                      <DeviceStatusToggle deviceId={device.id} status={device.status} />
+                      <CopyUrlButton url={url} />
+                      <a href={`/api/devices/${device.id}/qr?format=png&download=1`} className="btn-secondary">
+                        Download QR
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            }),
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
