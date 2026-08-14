@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { DeviceMockup } from "@/components/shop/DeviceMockup";
 import { cn } from "@/lib/utils";
+import { DEVICE_LIMIT_BY_PLAN } from "@/lib/display";
 import type { DeviceVariant, DevicePlan } from "@/types/database";
 
 const PRODUCTS: {
@@ -62,7 +63,15 @@ const USPS = [
   },
 ];
 
-export function ShopClient({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function ShopClient({
+  isLoggedIn,
+  existingDeviceCount = 0,
+  deviceLimit,
+}: {
+  isLoggedIn: boolean;
+  existingDeviceCount?: number;
+  deviceLimit?: number;
+}) {
   const [selectedVariant, setSelectedVariant] = useState<DeviceVariant>("STANDEE_CARD");
   const [includeApp, setIncludeApp] = useState(true);
   const [plan, setPlan] = useState<DevicePlan>("BASIC");
@@ -201,6 +210,14 @@ export function ShopClient({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
             Without the app, your ReviewTap card won&apos;t redirect anywhere yet. You can add the app
             (and set up your link) anytime from your dashboard.
+          </div>
+        )}
+
+        {isLoggedIn && deviceLimit !== undefined && existingDeviceCount >= deviceLimit && (
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            You already have {existingDeviceCount} device{existingDeviceCount === 1 ? "" : "s"}, which
+            is the limit for your current plan. You can still buy another — the Pro plan supports up
+            to {DEVICE_LIMIT_BY_PLAN.PRO} devices.
           </div>
         )}
 

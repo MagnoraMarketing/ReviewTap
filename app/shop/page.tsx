@@ -1,13 +1,27 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/current-user";
+import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
+import { DEVICE_LIMIT_BY_PLAN } from "@/lib/display";
 import { ShopClient } from "./ShopClient";
 
 export const metadata = { title: "Choose your ReviewTap" };
 
 export default async function ShopPage() {
   const currentUser = await getCurrentUser();
+
+  let existingDeviceCount = 0;
+  if (currentUser) {
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("devices")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", currentUser.id);
+    existingDeviceCount = count ?? 0;
+  }
+  const plan = currentUser?.subscription?.plan ?? "BASIC";
+  const deviceLimit = DEVICE_LIMIT_BY_PLAN[plan];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,7 +48,11 @@ export default async function ShopPage() {
         </div>
 
         <div className="mt-10">
-          <ShopClient isLoggedIn={Boolean(currentUser)} />
+          <ShopClient
+            isLoggedIn={Boolean(currentUser)}
+            existingDeviceCount={existingDeviceCount}
+            deviceLimit={deviceLimit}
+          />
         </div>
       </Container>
     </div>

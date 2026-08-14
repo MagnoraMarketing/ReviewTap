@@ -40,6 +40,14 @@ export const PLAN_PRICE_EUR: Record<DevicePlan, number> = {
   PRO: 20,
 };
 
+// Standard/Basic accounts can register one physical device; Pro accounts up
+// to five. This is a soft, UI-level guardrail (not enforced server-side) -
+// see the "Known limitations" note in the README.
+export const DEVICE_LIMIT_BY_PLAN: Record<DevicePlan, number> = {
+  BASIC: 1,
+  PRO: 5,
+};
+
 export const DEVICE_STATUS_LABELS: Record<DeviceStatus, string> = {
   ACTIVE: "Active",
   PAUSED: "Paused",

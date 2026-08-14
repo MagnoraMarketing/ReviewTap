@@ -149,16 +149,20 @@ route real customers hit most often (via NFC tap or QR scan).
 
 ## 7. NFC programming instructions
 
-The app only manages the URL written to the chip — it doesn't write to NFC hardware itself (that
-requires physical proximity to a phone).
-
 1. Buy a device in `/shop`; a unique device and permanent URL
    (`https://reviewtap.app/r/RT-XXXXXXXX`) are generated automatically after checkout.
-2. Open **Dashboard → NFC setup**, copy the URL.
-3. On the phone that will program the chip, install a free NFC-writing app (e.g. "NFC Tools" on
-   iOS/Android), write a "URL/URI" record with the copied link, then hold the phone against the
-   physical chip.
-4. This only needs to happen once — changing the destination afterwards is done entirely from the
+2. Open **Dashboard → NFC setup** (or a device's detail page) — each device has a **"Set up your
+   chip"** panel.
+3. **On Chrome for Android**, tap "Scan & write with your phone" (uses the [Web NFC
+   API](https://developer.mozilla.org/en-US/docs/Web/API/Web_NFC_API), `NDEFReader`) and hold the
+   phone against the physical chip — this writes the permanent URL directly from the browser, no
+   extra app needed. Then tap "Verify with NFC" (re-scan the chip) or "Verify with QR camera"
+   ([`BarcodeDetector`](https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector)) to
+   confirm it resolves to the right device before setting your review destination.
+4. **On every other browser** (this always includes iPhone/Safari, which doesn't support Web NFC),
+   use the manual instructions shown on the same page: install a free NFC-writing app (e.g. "NFC
+   Tools"), write a "URL/URI" record with the copied link, then hold the phone against the chip.
+5. This only needs to happen once — changing the destination afterwards is done entirely from the
    dashboard and never touches the chip again.
 
 ## 8. QR generation
@@ -253,3 +257,12 @@ geo headers, never from an external IP-lookup service. Full details in `/privacy
   checkout flow and onboarding wizard are built around provisioning one device per checkout
   session, matching the MVP's "one device per purchase" flow. `Dashboard → Devices → Add another
   ReviewTap` reuses the same `/shop` checkout to add more.
+- **Device limits are a soft, UI-only guardrail.** Basic accounts are guided toward 1 device and
+  Pro accounts toward 5 (`DEVICE_LIMIT_BY_PLAN` in `src/lib/display.ts`), shown as a banner on
+  Dashboard → Devices and in the shop once reached — but checkout is never blocked server-side, so
+  an account can still end up owning more devices than its plan's guideline.
+- **In-app NFC writing/verification requires Web NFC** (`NDEFReader`), which today means Chrome on
+  Android only. Every other browser — including all of iOS/Safari — falls back to the manual
+  "install a third-party NFC app" instructions shown on the same page. QR verification
+  (`BarcodeDetector`) has similarly partial browser support and fails over to "test it with your
+  phone's camera app" messaging.

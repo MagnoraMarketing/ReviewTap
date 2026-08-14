@@ -68,6 +68,7 @@ export async function getDashboardStats(deviceIds: string[]): Promise<DashboardS
 
   const byDestination = new Map<string, number>([
     ["GOOGLE_REVIEWS", 0],
+    ["FACEBOOK", 0],
     ["TRUSTPILOT", 0],
     ["TRIPADVISOR", 0],
     ["CUSTOM_URL", 0],
@@ -105,4 +106,40 @@ export async function getDashboardStats(deviceIds: string[]): Promise<DashboardS
     scansOverTime,
     scansByDestination,
   };
+}
+
+/**
+ * Review visits per platform for a single device over a short trailing
+ * window (default 7 days) - powers the "Review visits by platform" chart on
+ * the device detail page.
+ */
+export async function getScansByPlatform(
+  deviceId: string,
+  days = 7,
+): Promise<{ destination: string; count: number }[]> {
+  const supabase = createClient();
+  const windowStart = startOfDay(new Date());
+  windowStart.setDate(windowStart.getDate() - (days - 1));
+
+  const { data } = await supabase
+    .from("scans")
+    .select("destination_type")
+    .eq("device_id", deviceId)
+    .gte("timestamp", windowStart.toISOString())
+    .not("destination_type", "is", null);
+
+  const byDestination = new Map<string, number>([
+    ["GOOGLE_REVIEWS", 0],
+    ["FACEBOOK", 0],
+    ["TRUSTPILOT", 0],
+    ["TRIPADVISOR", 0],
+    ["CUSTOM_URL", 0],
+  ]);
+
+  for (const row of (data ?? []) as Pick<Scan, "destination_type">[]) {
+    if (!row.destination_type) continue;
+    byDestination.set(row.destination_type, (byDestination.get(row.destination_type) ?? 0) + 1);
+  }
+
+  return Array.from(byDestination.entries()).map(([destination, count]) => ({ destination, count }));
 }
