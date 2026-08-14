@@ -109,24 +109,30 @@ export async function getDashboardStats(deviceIds: string[]): Promise<DashboardS
 }
 
 /**
- * Review visits per platform for a single device over a short trailing
- * window (default 7 days) - powers the "Review visits by platform" chart on
- * the device detail page.
+ * Review visits per platform for a single device, optionally scoped to a
+ * trailing window in days (omit for all-time). Powers the "Review visits by
+ * platform" chart on the device detail page and the per-device platform
+ * breakdown on the devices list.
  */
 export async function getScansByPlatform(
   deviceId: string,
-  days = 7,
+  days?: number,
 ): Promise<{ destination: string; count: number }[]> {
   const supabase = createClient();
-  const windowStart = startOfDay(new Date());
-  windowStart.setDate(windowStart.getDate() - (days - 1));
 
-  const { data } = await supabase
+  let query = supabase
     .from("scans")
     .select("destination_type")
     .eq("device_id", deviceId)
-    .gte("timestamp", windowStart.toISOString())
     .not("destination_type", "is", null);
+
+  if (days !== undefined) {
+    const windowStart = startOfDay(new Date());
+    windowStart.setDate(windowStart.getDate() - (days - 1));
+    query = query.gte("timestamp", windowStart.toISOString());
+  }
+
+  const { data } = await query;
 
   const byDestination = new Map<string, number>([
     ["GOOGLE_REVIEWS", 0],

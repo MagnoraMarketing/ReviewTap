@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { deviceRedirectUrl, generateQrPngDataUrl } from "@/lib/qr";
+import { getScansByPlatform } from "@/lib/dashboard-stats";
 import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import {
+  DESTINATION_COLORS,
   DESTINATION_LABELS,
   DEVICE_LIMIT_BY_PLAN,
   DEVICE_STATUS_LABELS,
@@ -15,6 +17,7 @@ import {
   PLAN_LABELS,
 } from "@/lib/display";
 import { formatDate } from "@/lib/utils";
+import type { DestinationType } from "@/types/database";
 
 export const metadata = { title: "Devices" };
 
@@ -90,7 +93,16 @@ export default async function DevicesPage() {
           {await Promise.all(
             devices.map(async (device) => {
               const url = deviceRedirectUrl(device.public_id);
-              const qrDataUrl = await generateQrPngDataUrl(url);
+              const enabledTypes = new Set(
+                device.destinations.filter((d) => d.enabled).map((d) => d.type),
+              );
+              const [qrDataUrl, platformBreakdown] = await Promise.all([
+                generateQrPngDataUrl(url),
+                device.plan === "PRO" ? getScansByPlatform(device.id) : Promise.resolve([]),
+              ]);
+              const usedPlatforms = platformBreakdown.filter(
+                (p) => enabledTypes.has(p.destination as DestinationType) && p.count > 0,
+              );
               return (
                 <div key={device.id} className="card flex gap-5">
                   <div className="shrink-0 overflow-hidden rounded-xl border border-gray-100">
@@ -128,6 +140,33 @@ export default async function DevicesPage() {
                       <dt className="text-gray-400">Created</dt>
                       <dd className="text-ink-900">{formatDate(device.created_at)}</dd>
                     </dl>
+
+                    {device.plan === "PRO" && usedPlatforms.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-xs text-gray-400">Visits by platform</p>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {usedPlatforms
+                            .sort((a, b) => b.count - a.count)
+                            .map((p) => (
+                              <span
+                                key={p.destination}
+                                className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 py-1 pl-1 pr-2.5 text-xs font-medium text-ink-900"
+                              >
+                                <span
+                                  className="h-2 w-2 rounded-full"
+                                  style={{
+                                    backgroundColor:
+                                      DESTINATION_COLORS[p.destination as DestinationType] ?? "#9ca3af",
+                                  }}
+                                  aria-hidden
+                                />
+                                {DESTINATION_LABELS[p.destination as DestinationType] ?? p.destination}{" "}
+                                {p.count}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Link href={`/dashboard/devices/${device.id}`} className="btn-primary">
