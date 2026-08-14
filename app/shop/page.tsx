@@ -45,6 +45,14 @@ export default async function ShopPage() {
             Pick the design that fits your counter or desk. Both work identically — NFC tap or QR
             scan, sent to whichever platform you choose.
           </p>
+          {currentUser && (
+            <p className="mt-3 text-sm text-gray-400">
+              Already have your own NFC tag or QR code?{" "}
+              <Link href="/dashboard/devices/new" className="font-medium text-brand-600 hover:text-brand-700">
+                Set it up for free →
+              </Link>
+            </p>
+          )}
         </div>
 
         <div className="mt-10">
