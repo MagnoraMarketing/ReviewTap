@@ -8,7 +8,8 @@ export function Pricing() {
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-ink-900">Simple pricing</h2>
           <p className="mt-3 text-gray-500">
-            One card, bought once. An app subscription — recommended — powers the link.
+            Creating your ReviewTap account is <strong>free</strong> — you only pay for the months
+            your device is active, and can cancel anytime.
           </p>
         </div>
 
@@ -56,11 +57,17 @@ export function Pricing() {
           </div>
         </div>
 
-        <div className="mt-10 text-center">
-          <Link href="/shop" className="btn-primary px-6 py-3 text-base">
-            Get ReviewTap – €50
+        <div className="mt-10 flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-center">
+          <Link href="/signup" className="btn-primary px-6 py-3 text-base">
+            Create your free account
+          </Link>
+          <Link href="/shop" className="btn-secondary px-6 py-3 text-base">
+            Get a ReviewTap card – €50
           </Link>
         </div>
+        <p className="mt-3 text-center text-xs text-gray-400">
+          Already own an NFC tag or QR code? Sign up free and add it from your dashboard.
+        </p>
       </Container>
     </section>
   );

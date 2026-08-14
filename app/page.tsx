@@ -14,7 +14,7 @@ export default async function LandingPage() {
   return (
     <div>
       <LandingHeader isLoggedIn={Boolean(currentUser)} />
-      <Hero />
+      <Hero isLoggedIn={Boolean(currentUser)} />
       <HowItWorks />
       <Features />
       <Pricing />

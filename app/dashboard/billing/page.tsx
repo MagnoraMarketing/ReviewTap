@@ -29,7 +29,8 @@ export default async function BillingPage() {
     <div>
       <h1 className="text-2xl font-semibold text-ink-900">Billing</h1>
       <p className="mt-1 text-sm text-gray-500">
-        Manage your ReviewTap Pro subscription (€20/month) and view invoices via Stripe.
+        Your ReviewTap account itself is free — a subscription only charges for the months your
+        device is active, and you can cancel anytime. Manage it and view invoices via Stripe below.
       </p>
 
       <div className="card mt-6">
@@ -75,7 +76,10 @@ export default async function BillingPage() {
           </div>
         ) : (
           <div className="py-8 text-center">
-            <p className="text-sm text-gray-500">You don&apos;t have a ReviewTap subscription yet.</p>
+            <p className="text-sm text-gray-500">
+              You don&apos;t have a ReviewTap subscription yet — your account itself stays free
+              either way.
+            </p>
             <a href="/shop" className="btn-primary mt-4 inline-flex">
               Get ReviewTap
             </a>

@@ -3,12 +3,15 @@ import { Container } from "@/components/ui/Container";
 import { DESTINATION_COLORS, DESTINATION_LABELS } from "@/lib/display";
 import { DESTINATION_TYPES } from "@/lib/validation";
 
-export function Hero() {
+export function Hero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   return (
     <section className="overflow-hidden bg-gradient-to-b from-brand-50/60 to-white">
       <Container className="grid grid-cols-1 items-center gap-12 py-16 sm:py-24 lg:grid-cols-2">
         <div>
-          <span className="badge bg-brand-50 text-brand-700">NFC + QR review cards</span>
+          <div className="flex flex-wrap gap-2">
+            <span className="badge bg-brand-50 text-brand-700">NFC + QR review cards</span>
+            <span className="badge bg-emerald-50 text-emerald-700">Free account · Pay only while active</span>
+          </div>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-ink-900 sm:text-5xl">
             One card. Every platform.
             <br />
@@ -33,15 +36,22 @@ export function Hero() {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/shop" className="btn-primary justify-center px-6 py-3 text-base">
-              Get your ReviewTap – €50
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="btn-primary justify-center px-6 py-3 text-base">
+                Go to dashboard
+              </Link>
+            ) : (
+              <Link href="/signup" className="btn-primary justify-center px-6 py-3 text-base">
+                Create your free account
+              </Link>
+            )}
+            <Link href="/shop" className="btn-secondary justify-center px-6 py-3 text-base">
+              Get a ReviewTap card – €50
             </Link>
-            <a href="#how-it-works" className="btn-secondary justify-center px-6 py-3 text-base">
-              See how it works
-            </a>
           </div>
           <p className="mt-4 text-sm text-gray-400">
-            €50 one-time device fee + €20/month to keep your dynamic link active.
+            Creating your ReviewTap account is free — you only pay for the months your device is
+            active (from €10/month), and can cancel anytime.
           </p>
         </div>
 
