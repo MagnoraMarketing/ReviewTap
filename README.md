@@ -15,6 +15,10 @@ The physical device is a one-time €50 purchase and can be bought on its own; t
 is presented as a strongly recommended add-on (it's what lets you set the destination and see
 statistics) and can also be added later from Dashboard → Billing.
 
+ReviewTap isn't limited to cards bought from us: any subscriber can register their own NFC tag or
+QR code for free from `Dashboard → Devices → Add a device`, subject to the plan's device limit
+(see below) — no physical purchase required.
+
 ## Tech stack
 
 - **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, PWA manifest
@@ -253,14 +257,17 @@ geo headers, never from an external IP-lookup service. Full details in `/privacy
   intentionally never claims to know whether a visit became a submitted review. The architecture
   (a single `scans` table keyed by device + destination) can support review-sync APIs later
   without a schema rework.
-- **Multi-device support exists in the schema** (a user can own many `devices` rows) but the
-  checkout flow and onboarding wizard are built around provisioning one device per checkout
-  session, matching the MVP's "one device per purchase" flow. `Dashboard → Devices → Add another
-  ReviewTap` reuses the same `/shop` checkout to add more.
-- **Device limits are a soft, UI-only guardrail.** Basic accounts are guided toward 1 device and
-  Pro accounts toward 5 (`DEVICE_LIMIT_BY_PLAN` in `src/lib/display.ts`), shown as a banner on
-  Dashboard → Devices and in the shop once reached — but checkout is never blocked server-side, so
-  an account can still end up owning more devices than its plan's guideline.
+- **Multi-device support exists in the schema** (a user can own many `devices` rows). Devices can
+  be provisioned two ways: buying a physical card via `/shop` (Stripe checkout → webhook creates
+  the row), or free self-service registration via `POST /api/devices` from
+  `Dashboard → Devices → Add a device` for a subscriber's own NFC tag/QR code. Both land in the
+  same `devices` table and show up identically everywhere (Devices, NFC setup, Overview stats).
+- **Device limits.** Basic accounts get 1 device, Pro accounts get 5 (`DEVICE_LIMIT_BY_PLAN` in
+  `src/lib/display.ts`). This is a **hard** limit for free self-service devices (`/api/devices`
+  rejects the request once at the limit — a subscription is the only thing gating cost for those),
+  but only a **soft, UI-only** warning banner for the paid `/shop` checkout flow, which is never
+  blocked server-side — so an account can still end up owning more devices than its plan's
+  guideline if every one of them was bought as physical hardware.
 - **In-app NFC writing/verification requires Web NFC** (`NDEFReader`), which today means Chrome on
   Android only. Every other browser — including all of iOS/Safari — falls back to the manual
   "install a third-party NFC app" instructions shown on the same page. QR verification

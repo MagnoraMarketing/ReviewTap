@@ -28,7 +28,7 @@ export default async function NfcSetupPage() {
     return (
       <div className="card py-16 text-center text-sm text-gray-500">
         You don&apos;t have a ReviewTap device yet.{" "}
-        <Link href="/shop" className="text-brand-600 hover:text-brand-700">
+        <Link href="/dashboard/devices/new" className="text-brand-600 hover:text-brand-700">
           Get one →
         </Link>
       </div>
@@ -46,7 +46,7 @@ export default async function NfcSetupPage() {
             you never need to reprogram the chip.
           </p>
         </div>
-        <Link href="/shop" className="btn-secondary shrink-0">
+        <Link href="/dashboard/devices/new" className="btn-secondary shrink-0">
           Add device
         </Link>
       </div>

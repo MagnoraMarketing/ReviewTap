@@ -60,7 +60,7 @@ export default async function DevicesPage() {
             {devices?.length ?? 0} of {deviceLimit} devices on your {PLAN_LABELS[plan]} plan
           </p>
         </div>
-        <Link href="/shop" className="btn-secondary">
+        <Link href="/dashboard/devices/new" className="btn-secondary">
           Add another ReviewTap
         </Link>
       </div>
@@ -84,7 +84,7 @@ export default async function DevicesPage() {
       {!devices || devices.length === 0 ? (
         <div className="card mt-6 flex flex-col items-center gap-3 py-16 text-center">
           <p className="text-sm text-gray-500">You don&apos;t have any ReviewTap devices yet.</p>
-          <Link href="/shop" className="btn-primary">
+          <Link href="/dashboard/devices/new" className="btn-primary">
             Get your ReviewTap
           </Link>
         </div>

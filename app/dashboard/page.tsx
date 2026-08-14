@@ -95,7 +95,7 @@ export default async function DashboardOverviewPage() {
         <div className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 p-4 text-sm text-brand-800">
           <strong>Preview.</strong> This is an example of what your dashboard looks like, filled with
           sample data.{" "}
-          <Link href="/shop" className="font-medium underline hover:text-brand-900">
+          <Link href="/dashboard/devices/new" className="font-medium underline hover:text-brand-900">
             Get your ReviewTap
           </Link>{" "}
           to start seeing your real numbers here.
