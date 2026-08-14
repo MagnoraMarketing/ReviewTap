@@ -3,20 +3,24 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { deviceRedirectUrl, generateQrPngDataUrl } from "@/lib/qr";
-import { getDashboardStats } from "@/lib/dashboard-stats";
+import { getDashboardStats, getScansByPlatform } from "@/lib/dashboard-stats";
 import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import { DestinationForm } from "@/components/dashboard/DestinationForm";
 import { MultiDestinationForm } from "@/components/dashboard/MultiDestinationForm";
 import { DeviceNameForm } from "@/components/dashboard/DeviceNameForm";
+import { NfcDeviceWriter } from "@/components/dashboard/NfcDeviceWriter";
 import { ScansOverTimeChart } from "@/components/dashboard/charts/ScansOverTimeChart";
+import { ReviewsByPlatformChart } from "@/components/dashboard/charts/ReviewsByPlatformChart";
 import { StatCard } from "@/components/dashboard/StatCard";
 import {
   DEVICE_STATUS_LABELS,
   DEVICE_STATUS_TONE,
   DEVICE_VARIANT_LABELS,
   PLAN_LABELS,
+  SUBSCRIPTION_STATUS_LABELS,
+  SUBSCRIPTION_STATUS_TONE,
 } from "@/lib/display";
 import { formatDate } from "@/lib/utils";
 
@@ -32,10 +36,15 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
   if (!device) notFound();
 
   const url = deviceRedirectUrl(device.public_id);
-  const [qrDataUrl, stats] = await Promise.all([
+  const [qrDataUrl, stats, platformStats, { data: accountDevices }] = await Promise.all([
     generateQrPngDataUrl(url),
     getDashboardStats([device.id]),
+    device.plan === "PRO" ? getScansByPlatform(device.id, 7) : Promise.resolve([]),
+    supabase.from("devices").select("status").eq("user_id", currentUser.id),
   ]);
+
+  const activeDeviceCount = (accountDevices ?? []).filter((d) => d.status === "ACTIVE").length;
+  const totalDeviceCount = (accountDevices ?? []).length;
 
   return (
     <div>
@@ -56,35 +65,75 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="card lg:col-span-2">
-          {device.plan === "PRO" ? (
-            <>
-              <h2 className="text-sm font-semibold text-ink-900">Chooser page platforms</h2>
-              <p className="mt-1 text-xs text-gray-400">
-                Enable the platforms visitors can choose between when they tap or scan.
-              </p>
-              <div className="mt-4">
-                <MultiDestinationForm deviceId={device.id} initialDestinations={device.destinations} />
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="text-sm font-semibold text-ink-900">Review destination</h2>
-              <p className="mt-1 text-xs text-gray-400">
-                Choose where the NFC tap and QR scan send your customers.
-              </p>
-              <div className="mt-4">
-                <DestinationForm
-                  deviceId={device.id}
-                  initialType={device.destination_type}
-                  initialUrl={device.destination_url}
-                />
-              </div>
-            </>
-          )}
-        </div>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total review visits" value={stats.totalScans} />
+        <StatCard label="This month" value={stats.scansThisMonth} />
+        <StatCard label="Active devices" value={`${activeDeviceCount} / ${totalDeviceCount}`} />
+        <StatCard
+          label="Subscription"
+          value={
+            currentUser.subscription ? (
+              <Badge tone={SUBSCRIPTION_STATUS_TONE[currentUser.subscription.status]}>
+                {SUBSCRIPTION_STATUS_LABELS[currentUser.subscription.status]}
+              </Badge>
+            ) : (
+              <Badge tone="gray">None</Badge>
+            )
+          }
+        />
+      </div>
 
+      <div className="card mt-6">
+        <h2 className="text-sm font-semibold text-ink-900">Set up your chip</h2>
+        <p className="mt-1 text-xs text-gray-400">
+          This is the permanent link written to your NFC chip and encoded in your QR code.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <code className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-ink-900">{url}</code>
+          <CopyUrlButton url={url} />
+        </div>
+        <div className="mt-5 border-t border-gray-100 pt-5">
+          <NfcDeviceWriter url={url} />
+        </div>
+      </div>
+
+      {device.plan === "PRO" ? (
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="card">
+            <h2 className="text-sm font-semibold text-ink-900">Choose platforms</h2>
+            <p className="mt-1 text-xs text-gray-400">
+              Visitors pick one of these when they tap or scan.
+            </p>
+            <div className="mt-4">
+              <MultiDestinationForm deviceId={device.id} initialDestinations={device.destinations} />
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-sm font-semibold text-ink-900">Review visits by platform</h2>
+            <p className="mt-1 text-xs text-gray-400">Last 7 days</p>
+            <div className="mt-4">
+              <ReviewsByPlatformChart data={platformStats} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="card mt-6">
+          <h2 className="text-sm font-semibold text-ink-900">Review destination</h2>
+          <p className="mt-1 text-xs text-gray-400">
+            Choose where the NFC tap and QR scan send your customers.
+          </p>
+          <div className="mt-4">
+            <DestinationForm
+              deviceId={device.id}
+              initialType={device.destination_type}
+              initialUrl={device.destination_url}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="card">
           <h2 className="text-sm font-semibold text-ink-900">QR code</h2>
           <div className="mt-4 flex justify-center rounded-xl border border-gray-100 p-4">
@@ -103,34 +152,18 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
             Print QR card
           </Link>
         </div>
-      </div>
 
-      <div className="card mt-6">
-        <h2 className="text-sm font-semibold text-ink-900">ReviewTap URL</h2>
-        <p className="mt-1 text-xs text-gray-400">
-          This is the permanent link written to your NFC chip and encoded in your QR code.
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <code className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-ink-900">{url}</code>
-          <CopyUrlButton url={url} />
+        <div className="card lg:col-span-2">
+          <h2 className="text-sm font-semibold text-ink-900">Device name</h2>
+          <div className="mt-3">
+            <DeviceNameForm deviceId={device.id} initialName={device.name} />
+          </div>
         </div>
       </div>
 
       <div className="card mt-6">
-        <h2 className="text-sm font-semibold text-ink-900">Device name</h2>
-        <div className="mt-3">
-          <DeviceNameForm deviceId={device.id} initialName={device.name} />
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Total review visits" value={stats.totalScans} />
-        <StatCard label="Scans this week" value={stats.scansThisWeek} />
-        <StatCard label="Scans this month" value={stats.scansThisMonth} />
-      </div>
-
-      <div className="card mt-4">
         <h2 className="text-sm font-semibold text-ink-900">Scans over time</h2>
+        <p className="mt-1 text-xs text-gray-400">Last 30 days</p>
         <div className="mt-4">
           <ScansOverTimeChart data={stats.scansOverTime} />
         </div>

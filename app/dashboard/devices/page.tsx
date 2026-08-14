@@ -8,6 +8,7 @@ import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import {
   DESTINATION_LABELS,
+  DEVICE_LIMIT_BY_PLAN,
   DEVICE_STATUS_LABELS,
   DEVICE_STATUS_TONE,
   DEVICE_VARIANT_LABELS,
@@ -28,6 +29,10 @@ export default async function DevicesPage() {
     .eq("user_id", currentUser.id)
     .order("created_at", { ascending: true });
 
+  const plan = currentUser.subscription?.plan ?? "BASIC";
+  const deviceLimit = DEVICE_LIMIT_BY_PLAN[plan];
+  const atOrOverLimit = (devices?.length ?? 0) >= deviceLimit;
+
   const deviceIds = (devices ?? []).map((d) => d.id);
   const scanCounts = new Map<string, number>();
 
@@ -46,11 +51,32 @@ export default async function DevicesPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-ink-900">Devices</h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-ink-900">Devices</h1>
+          <p className="mt-1 text-sm text-gray-400">
+            {devices?.length ?? 0} of {deviceLimit} devices on your {PLAN_LABELS[plan]} plan
+          </p>
+        </div>
         <Link href="/shop" className="btn-secondary">
           Add another ReviewTap
         </Link>
       </div>
+
+      {atOrOverLimit && (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          You&apos;ve reached the {deviceLimit}-device limit for the {PLAN_LABELS[plan]} plan.{" "}
+          {plan === "BASIC" ? (
+            <>
+              <Link href="/dashboard/billing" className="font-medium underline hover:text-amber-900">
+                Upgrade to Pro
+              </Link>{" "}
+              for up to {DEVICE_LIMIT_BY_PLAN.PRO} devices.
+            </>
+          ) : (
+            "You can still add another ReviewTap if you need one."
+          )}
+        </div>
+      )}
 
       {!devices || devices.length === 0 ? (
         <div className="card mt-6 flex flex-col items-center gap-3 py-16 text-center">
