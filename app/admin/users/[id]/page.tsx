@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminUser } from "@/lib/require-admin";
 import { Badge } from "@/components/ui/Badge";
 import { AdminDeviceStatusControl } from "@/components/admin/AdminDeviceStatusControl";
+import { AdminTestSubscriptionControl } from "@/components/admin/AdminTestSubscriptionControl";
 import {
   DESTINATION_LABELS,
   DEVICE_STATUS_LABELS,
@@ -12,6 +13,7 @@ import {
   SUBSCRIPTION_STATUS_TONE,
 } from "@/lib/display";
 import { formatDate } from "@/lib/utils";
+import { isTestSubscription } from "@/lib/admin-test-subscription";
 
 export const metadata = { title: "Admin · User" };
 
@@ -97,6 +99,12 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
           ) : (
             <p className="mt-3 text-sm text-gray-400">No subscription on file.</p>
           )}
+          <AdminTestSubscriptionControl
+            userId={profile.id}
+            subscriptionKind={
+              !subscription ? "none" : isTestSubscription(subscription.stripe_customer_id) ? "test" : "real"
+            }
+          />
         </div>
 
         <div className="card">
