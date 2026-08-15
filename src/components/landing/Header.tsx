@@ -22,6 +22,9 @@ export function LandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           <a href="#faq" className="hover:text-ink-900">
             FAQ
           </a>
+          <Link href="/blog" className="hover:text-ink-900">
+            Blog
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
