@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEVICE_PLANS } from "@/lib/validation";
-import { TEST_SUBSCRIPTION_CUSTOMER_PREFIX } from "@/lib/admin-test-subscription";
+import { TEST_SUBSCRIPTION_CUSTOMER_PREFIX, SELF_TRIAL_CUSTOMER_PREFIX } from "@/lib/admin-test-subscription";
 
 const grantSchema = z.object({ plan: z.enum(DEVICE_PLANS).default("PRO") });
 
@@ -69,7 +69,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   return NextResponse.json({ subscription: data });
 }
 
-/** Admin-only: revokes a test grant created by the POST handler above. */
+/**
+ * Admin-only: revokes a fake grant on this account - either a test grant
+ * from the POST handler above, or a self-serve free trial the user started
+ * themselves via /api/trial. Matches by prefix so a real Stripe-backed
+ * subscription can never be deleted by this route.
+ */
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createClient();
   const admin = await requireAdmin(supabase);
@@ -82,7 +87,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     .from("subscriptions")
     .delete()
     .eq("user_id", params.id)
-    .like("stripe_customer_id", `${TEST_SUBSCRIPTION_CUSTOMER_PREFIX}%`);
+    .or(
+      `stripe_customer_id.like.${TEST_SUBSCRIPTION_CUSTOMER_PREFIX}%,stripe_customer_id.like.${SELF_TRIAL_CUSTOMER_PREFIX}%`,
+    );
 
   if (error) {
     console.error("Failed to revoke test subscription", error);

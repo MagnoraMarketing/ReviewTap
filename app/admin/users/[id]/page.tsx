@@ -13,7 +13,7 @@ import {
   SUBSCRIPTION_STATUS_TONE,
 } from "@/lib/display";
 import { formatDate } from "@/lib/utils";
-import { isTestSubscription } from "@/lib/admin-test-subscription";
+import { isTestSubscription, isSelfTrialSubscription } from "@/lib/admin-test-subscription";
 
 export const metadata = { title: "Admin · User" };
 
@@ -102,7 +102,13 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
           <AdminTestSubscriptionControl
             userId={profile.id}
             subscriptionKind={
-              !subscription ? "none" : isTestSubscription(subscription.stripe_customer_id) ? "test" : "real"
+              !subscription
+                ? "none"
+                : isSelfTrialSubscription(subscription.stripe_customer_id)
+                  ? "trial"
+                  : isTestSubscription(subscription.stripe_customer_id)
+                    ? "test"
+                    : "real"
             }
           />
         </div>
