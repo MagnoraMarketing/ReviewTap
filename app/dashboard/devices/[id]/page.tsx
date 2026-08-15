@@ -9,6 +9,7 @@ import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
 import { ShareQrButton } from "@/components/dashboard/ShareQrButton";
+import { DeleteDeviceButton } from "@/components/dashboard/DeleteDeviceButton";
 import { DestinationForm } from "@/components/dashboard/DestinationForm";
 import { MultiDestinationForm } from "@/components/dashboard/MultiDestinationForm";
 import { DeviceNameForm } from "@/components/dashboard/DeviceNameForm";
@@ -185,6 +186,18 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
       </div>
 
       <p className="mt-6 text-xs text-gray-400">Created {formatDate(device.created_at)}</p>
+
+      <div className="card mt-6 border-red-100">
+        <h2 className="text-sm font-semibold text-ink-900">Danger zone</h2>
+        <p className="mt-1 text-xs text-gray-400">
+          Deleting this device frees up its slot immediately, so you can register a different NFC
+          tag or QR code right after — without needing to upgrade your plan first (only the number
+          of devices you have at once counts toward your plan&apos;s limit).
+        </p>
+        <div className="mt-3">
+          <DeleteDeviceButton deviceId={device.id} deviceName={device.name} />
+        </div>
+      </div>
     </div>
   );
 }
