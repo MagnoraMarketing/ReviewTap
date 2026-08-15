@@ -7,6 +7,7 @@ import { getScansByPlatform } from "@/lib/dashboard-stats";
 import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
+import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
 import {
   DESTINATION_COLORS,
   DESTINATION_LABELS,
@@ -64,6 +65,12 @@ export default async function DevicesPage() {
           Add another ReviewTap
         </Link>
       </div>
+
+      {!currentUser.hasActiveSubscription && devices && devices.length > 0 && (
+        <div className="mt-4">
+          <ActivationBanner />
+        </div>
+      )}
 
       {atOrOverLimit && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">

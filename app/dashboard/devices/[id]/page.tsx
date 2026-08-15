@@ -7,6 +7,7 @@ import { getDashboardStats, getScansByPlatform } from "@/lib/dashboard-stats";
 import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
+import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
 import { DestinationForm } from "@/components/dashboard/DestinationForm";
 import { MultiDestinationForm } from "@/components/dashboard/MultiDestinationForm";
 import { DeviceNameForm } from "@/components/dashboard/DeviceNameForm";
@@ -64,6 +65,12 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
           <DeviceStatusToggle deviceId={device.id} status={device.status} />
         </div>
       </div>
+
+      {!currentUser.hasActiveSubscription && (
+        <div className="mt-6">
+          <ActivationBanner />
+        </div>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total review visits" value={stats.totalScans} />

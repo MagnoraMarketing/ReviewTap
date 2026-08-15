@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getDashboardStats, type DashboardStats } from "@/lib/dashboard-stats";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { SubscriptionBanner } from "@/components/dashboard/SubscriptionBanner";
+import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
 import { Badge } from "@/components/ui/Badge";
 import { ScansOverTimeChart } from "@/components/dashboard/charts/ScansOverTimeChart";
 import { ScansByDestinationChart } from "@/components/dashboard/charts/ScansByDestinationChart";
@@ -102,7 +103,11 @@ export default async function DashboardOverviewPage() {
         </div>
       ) : (
         <div className="mt-6">
-          <SubscriptionBanner status={currentUser.subscription?.status} />
+          {currentUser.subscription ? (
+            <SubscriptionBanner status={currentUser.subscription.status} />
+          ) : (
+            <ActivationBanner />
+          )}
         </div>
       )}
 

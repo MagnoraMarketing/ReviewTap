@@ -14,8 +14,9 @@ export function AddAppCard() {
   return (
     <div>
       <p className="text-sm text-gray-500">
-        Your ReviewTap device is set up, but you don&apos;t have the app yet — you&apos;ll need it to
-        choose where your link points and to see scan statistics.
+        Your ReviewTap is configured, but it isn&apos;t live yet — activate it with a subscription so
+        it actually redirects real visitors and starts recording statistics. Nothing you&apos;ve set
+        up will be lost while you decide.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         {PLANS.map((p) => (
