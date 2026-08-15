@@ -78,11 +78,16 @@ export default async function BillingPage() {
           <div className="py-8 text-center">
             <p className="text-sm text-gray-500">
               You don&apos;t have a ReviewTap subscription yet — your account itself stays free
-              either way.
+              either way. Configure your ReviewTap for free first, or get a physical card now.
             </p>
-            <a href="/shop" className="btn-primary mt-4 inline-flex">
-              Get ReviewTap
-            </a>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <a href="/dashboard/devices/new" className="btn-primary">
+                Configure for free
+              </a>
+              <a href="/shop" className="btn-secondary">
+                Get a physical card
+              </a>
+            </div>
           </div>
         )}
       </div>

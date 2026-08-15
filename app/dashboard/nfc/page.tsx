@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { deviceRedirectUrl } from "@/lib/qr";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { NfcDeviceWriter } from "@/components/dashboard/NfcDeviceWriter";
+import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
 import { DEVICE_LIMIT_BY_PLAN, PLAN_LABELS } from "@/lib/display";
 
 export const metadata = { title: "NFC setup" };
@@ -50,6 +51,12 @@ export default async function NfcSetupPage() {
           Add device
         </Link>
       </div>
+
+      {!currentUser.hasActiveSubscription && (
+        <div className="mt-4">
+          <ActivationBanner />
+        </div>
+      )}
 
       {atOrOverLimit && (
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">

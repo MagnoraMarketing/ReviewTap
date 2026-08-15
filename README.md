@@ -15,9 +15,13 @@ The physical device is a one-time €50 purchase and can be bought on its own; t
 is presented as a strongly recommended add-on (it's what lets you set the destination and see
 statistics) and can also be added later from Dashboard → Billing.
 
-ReviewTap isn't limited to cards bought from us: any subscriber can register their own NFC tag or
-QR code for free from `Dashboard → Devices → Add a device`, subject to the plan's device limit
-(see below) — no physical purchase required.
+ReviewTap isn't limited to cards bought from us: anyone signed in can register their own NFC tag
+or QR code for free from `Dashboard → Devices → Add a device`, subject to a device limit (see
+below) — no physical purchase, and no subscription, required. Configuring destinations, previewing
+the chooser page and generating a QR code are all free; only the `/r/[deviceId]` redirect route's
+server-side subscription check decides whether a link actually redirects a real visitor, so nothing
+about "going live" is a client-trusted decision. Subscribing later activates whatever was already
+configured — no data is lost while unsubscribed.
 
 ## Tech stack
 
@@ -147,6 +151,12 @@ npm run build      # production build
 3. Set `NEXT_PUBLIC_APP_URL` to your production domain (e.g. `https://reviewtap.app`).
 4. Deploy, then update the Stripe webhook endpoint and Supabase auth redirect URLs to point at the
    production domain.
+5. **Check Project Settings → Deployment Protection.** Vercel Authentication (SSO protection) is
+   often on by default for new projects and, without a custom domain attached, blocks *every*
+   visitor — including real customers scanning a QR code — behind a Vercel login wall, even though
+   the app itself is working fine. For a public product like ReviewTap this should be disabled (or
+   scoped to preview deployments only), and a real custom domain (not just the auto-generated
+   `*.vercel.app` URL) should be attached so production traffic never depends on that setting.
 
 The `/r/[deviceId]` redirect route runs on the **Edge Runtime** for low latency, since it's the
 route real customers hit most often (via NFC tap or QR scan).
@@ -260,14 +270,20 @@ geo headers, never from an external IP-lookup service. Full details in `/privacy
 - **Multi-device support exists in the schema** (a user can own many `devices` rows). Devices can
   be provisioned two ways: buying a physical card via `/shop` (Stripe checkout → webhook creates
   the row), or free self-service registration via `POST /api/devices` from
-  `Dashboard → Devices → Add a device` for a subscriber's own NFC tag/QR code. Both land in the
-  same `devices` table and show up identically everywhere (Devices, NFC setup, Overview stats).
-- **Device limits.** Basic accounts get 1 device, Pro accounts get 5 (`DEVICE_LIMIT_BY_PLAN` in
-  `src/lib/display.ts`). This is a **hard** limit for free self-service devices (`/api/devices`
-  rejects the request once at the limit — a subscription is the only thing gating cost for those),
-  but only a **soft, UI-only** warning banner for the paid `/shop` checkout flow, which is never
-  blocked server-side — so an account can still end up owning more devices than its plan's
-  guideline if every one of them was bought as physical hardware.
+  `Dashboard → Devices → Add a device` for anyone's own NFC tag/QR code, subscribed or not. Both
+  land in the same `devices` table and show up identically everywhere (Devices, NFC setup, Overview
+  stats). A device created without a subscription can be fully configured (destination(s), name,
+  Basic/Pro preview style) and its QR/NFC link generated; it simply won't redirect real visitors
+  until the owning account has an active subscription (enforced in `get_redirect_target` /
+  `src/lib/redirect-target.ts`, never in the client). Subscribing doesn't require starting over —
+  whatever was already configured applies immediately, and `customer.subscription.*` webhooks sync
+  every device's `plan` to whatever was actually purchased.
+- **Device limits.** Basic accounts (and accounts with no subscription at all) get 1 device, Pro
+  accounts get 5 (`DEVICE_LIMIT_BY_PLAN` in `src/lib/display.ts`). This is a **hard** limit for free
+  self-service devices (`/api/devices` rejects the request once at the limit), but only a **soft,
+  UI-only** warning banner for the paid `/shop` checkout flow, which is never blocked server-side —
+  so an account can still end up owning more devices than its plan's guideline if every one of them
+  was bought as physical hardware.
 - **In-app NFC writing/verification requires Web NFC** (`NDEFReader`), which today means Chrome on
   Android only. Every other browser — including all of iOS/Safari — falls back to the manual
   "install a third-party NFC app" instructions shown on the same page. QR verification

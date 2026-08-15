@@ -29,7 +29,9 @@ export default async function NewDevicePage() {
 
       <h1 className="mt-3 text-2xl font-semibold text-ink-900">Add a device</h1>
       <p className="mt-1 max-w-2xl text-sm text-gray-500">
-        ReviewTap works with any NFC tag or QR code, not just cards bought from us.
+        ReviewTap works with any NFC tag or QR code, not just cards bought from us. Configuring one
+        is completely free — you only need an active subscription once you&apos;re ready for it to
+        actually work for real visitors.
       </p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -37,19 +39,12 @@ export default async function NewDevicePage() {
           <h2 className="text-sm font-semibold text-ink-900">Use your own NFC tag or QR code</h2>
           <p className="mt-1 text-xs text-gray-400">
             Free. Creates a permanent ReviewTap link you write to any blank NFC tag or print as a
-            QR code yourself.
+            QR code yourself. Configure your destinations and preview everything now — activate it
+            with a subscription whenever you&apos;re ready.
           </p>
 
           <div className="mt-4">
-            {!currentUser.hasActiveSubscription ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-                You need an active ReviewTap subscription to add a device.{" "}
-                <Link href="/dashboard/billing" className="font-medium underline hover:text-amber-900">
-                  Add a subscription
-                </Link>
-                .
-              </div>
-            ) : atOrOverLimit ? (
+            {atOrOverLimit ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                 You&apos;ve reached the {limit}-device limit for the {PLAN_LABELS[plan]} plan.{" "}
                 {plan === "BASIC" ? (
