@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
+import { ShareQrButton } from "@/components/dashboard/ShareQrButton";
 import {
   DESTINATION_COLORS,
   DESTINATION_LABELS,
@@ -184,6 +185,11 @@ export default async function DevicesPage() {
                       <a href={`/api/devices/${device.id}/qr?format=png&download=1`} className="btn-secondary">
                         Download QR
                       </a>
+                      <ShareQrButton
+                        qrUrl={`/api/devices/${device.id}/qr?format=png`}
+                        filename={`reviewtap-${device.public_id.toLowerCase()}.png`}
+                        title={`${device.name} — ReviewTap QR code`}
+                      />
                     </div>
                   </div>
                 </div>

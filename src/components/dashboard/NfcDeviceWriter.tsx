@@ -6,6 +6,15 @@ type WriteStatus = "idle" | "writing" | "written" | "error";
 type VerifyMethod = "nfc" | "qr" | null;
 type VerifyStatus = "idle" | "scanning" | "verified" | "mismatch" | "error";
 
+// Web NFC's scan()/write() promises never resolve or reject on their own if
+// no tag is ever presented - without a timeout, a phone that isn't actually
+// detecting the chip (NFC off, case blocking the antenna, wrong position on
+// the phone) just sits on "Hold your phone against the chip..." forever with
+// no feedback at all, which reads as "nothing happens".
+const NFC_TIMEOUT_MS = 20_000;
+const NFC_TIMEOUT_MESSAGE =
+  "No chip detected after 20 seconds. Make sure NFC is turned on in your phone's system settings, remove any case or wallet that might block the antenna, and hold the chip against the top-back of your phone without moving it.";
+
 function normalizeUrl(value: string): string {
   return value.trim().replace(/\/+$/, "").toLowerCase();
 }
@@ -45,7 +54,9 @@ export function NfcDeviceWriter({ url }: { url: string }) {
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const writeAbortRef = useRef<AbortController | null>(null);
+  const writeTimedOutRef = useRef(false);
   const nfcVerifyAbortRef = useRef<AbortController | null>(null);
+  const verifyTimedOutRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const qrIntervalRef = useRef<number | null>(null);
@@ -77,19 +88,31 @@ export function NfcDeviceWriter({ url }: { url: string }) {
   async function handleWrite() {
     setWriteError(null);
     setWriteStatus("writing");
+    writeTimedOutRef.current = false;
     const controller = new AbortController();
     writeAbortRef.current = controller;
+    const timeoutId = window.setTimeout(() => {
+      writeTimedOutRef.current = true;
+      controller.abort();
+    }, NFC_TIMEOUT_MS);
     try {
       const ndef = new NDEFReader();
       await ndef.write({ records: [{ recordType: "url", data: url }] }, { signal: controller.signal });
       setWriteStatus("written");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
-        setWriteStatus("idle");
+        if (writeTimedOutRef.current) {
+          setWriteStatus("error");
+          setWriteError(NFC_TIMEOUT_MESSAGE);
+        } else {
+          setWriteStatus("idle");
+        }
         return;
       }
       setWriteStatus("error");
       setWriteError(nfcErrorMessage(error));
+    } finally {
+      window.clearTimeout(timeoutId);
     }
   }
 
@@ -101,11 +124,17 @@ export function NfcDeviceWriter({ url }: { url: string }) {
     setVerifyMethod("nfc");
     setVerifyError(null);
     setVerifyStatus("scanning");
+    verifyTimedOutRef.current = false;
     const controller = new AbortController();
     nfcVerifyAbortRef.current = controller;
+    const timeoutId = window.setTimeout(() => {
+      verifyTimedOutRef.current = true;
+      controller.abort();
+    }, NFC_TIMEOUT_MS);
     try {
       const ndef = new NDEFReader();
       ndef.onreading = (event) => {
+        window.clearTimeout(timeoutId);
         const decoded = decodeUrlRecord(event.message);
         if (decoded && normalizeUrl(decoded) === normalizeUrl(url)) {
           setVerifyStatus("verified");
@@ -116,9 +145,17 @@ export function NfcDeviceWriter({ url }: { url: string }) {
       };
       await ndef.scan({ signal: controller.signal });
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
+      if (error instanceof DOMException && error.name === "AbortError") {
+        if (verifyTimedOutRef.current) {
+          setVerifyStatus("error");
+          setVerifyError(NFC_TIMEOUT_MESSAGE);
+        }
+        return;
+      }
       setVerifyStatus("error");
       setVerifyError(nfcErrorMessage(error));
+    } finally {
+      window.clearTimeout(timeoutId);
     }
   }
 

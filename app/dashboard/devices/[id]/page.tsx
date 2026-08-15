@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { CopyUrlButton } from "@/components/dashboard/CopyUrlButton";
 import { DeviceStatusToggle } from "@/components/dashboard/DeviceStatusToggle";
 import { ActivationBanner } from "@/components/dashboard/ActivationBanner";
+import { ShareQrButton } from "@/components/dashboard/ShareQrButton";
 import { DestinationForm } from "@/components/dashboard/DestinationForm";
 import { MultiDestinationForm } from "@/components/dashboard/MultiDestinationForm";
 import { DeviceNameForm } from "@/components/dashboard/DeviceNameForm";
@@ -154,6 +155,13 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
             <a href={`/api/devices/${device.id}/qr?format=svg&download=1`} className="btn-secondary">
               SVG
             </a>
+          </div>
+          <div className="mt-2">
+            <ShareQrButton
+              qrUrl={`/api/devices/${device.id}/qr?format=png`}
+              filename={`reviewtap-${device.public_id.toLowerCase()}.png`}
+              title={`${device.name} — ReviewTap QR code`}
+            />
           </div>
           <Link href={`/dashboard/devices/${device.id}/print`} className="btn-primary mt-2 w-full">
             Print QR card
