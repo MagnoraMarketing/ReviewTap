@@ -32,6 +32,9 @@ export function Footer() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Company</p>
           <nav className="mt-3 flex flex-col gap-2 text-sm text-gray-500">
+            <Link href="/login" className="hover:text-ink-900">
+              Log in
+            </Link>
             <Link href="/blog" className="hover:text-ink-900">
               Blog
             </Link>
