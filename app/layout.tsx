@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GoogleTranslateLoader } from "@/components/i18n/GoogleTranslateLoader";
 import "./globals.css";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://reviewtap.app";
@@ -39,7 +40,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white font-sans">{children}</body>
+      <body className="min-h-screen bg-white font-sans">
+        <GoogleTranslateLoader />
+        {children}
+      </body>
     </html>
   );
 }

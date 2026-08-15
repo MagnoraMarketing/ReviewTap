@@ -11,6 +11,24 @@
   }
 }
 
+/* Google Website Translator: we drive it from our own styled dropdown
+   (see LanguageSwitcher), so hide every bit of its default UI - the top
+   banner iframe, the highlighted-text markup it adds, and the tooltip. */
+.goog-te-banner-frame,
+.goog-te-gadget-icon,
+.goog-tooltip,
+.goog-tooltip:hover,
+#goog-gt-tt {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
 @layer components {
   .card {
     @apply rounded-2xl border border-gray-200 bg-white p-6 shadow-card;

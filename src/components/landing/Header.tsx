@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 export function LandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
@@ -27,6 +28,7 @@ export function LandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
           </Link>
         </nav>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher className="hidden sm:inline-flex" />
           {isLoggedIn ? (
             <Link href="/dashboard" className="btn-primary">
               Dashboard
