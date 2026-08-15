@@ -34,7 +34,7 @@ export function NewDeviceForm() {
             setError(body.error ?? "Couldn't create device.");
             return;
           }
-          router.push(`/dashboard/devices/${body.device.id}`);
+          router.push(`/dashboard/devices/${body.device.id}/nfc-setup`);
         });
       }}
       className="space-y-3"
@@ -89,10 +89,9 @@ export function NewDeviceForm() {
         {isPending ? "Creating…" : "Create device"}
       </Button>
       <p className="text-xs text-gray-400">
-        Creates a permanent ReviewTap link and QR code you can configure and preview right away. It
-        won&apos;t redirect real visitors until you have an active subscription — write it to your own
-        NFC tag from <span className="font-medium">Dashboard → NFC setup</span> or print the QR code
-        whenever you&apos;re ready.
+        Creates a permanent ReviewTap link and QR code you can configure and preview right away —
+        next you&apos;ll connect your NFC tag (or skip that and just print the QR code). It won&apos;t
+        redirect real visitors until you have an active subscription.
       </p>
     </form>
   );
