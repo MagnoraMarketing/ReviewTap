@@ -20,12 +20,14 @@ export function AdminTestSubscriptionControl({
   userId: string;
   /**
    * "none": no subscription row at all - safe to grant a test one.
-   * "test": current row is a previous test grant - safe to revoke, or
-   * re-grant with a different plan.
+   * "trial": the user started their own one-time free trial via
+   * /api/trial - revocable here the same way as a test grant.
+   * "test": current row is a previous admin test grant - safe to revoke,
+   * or re-grant with a different plan.
    * "real": a genuine Stripe-backed subscription exists - testing tools are
    * hidden entirely so this can never overwrite a paying customer's row.
    */
-  subscriptionKind: "none" | "test" | "real";
+  subscriptionKind: "none" | "trial" | "test" | "real";
 }) {
   const router = useRouter();
   const [plan, setPlan] = useState<DevicePlan>("PRO");
@@ -43,36 +45,45 @@ export function AdminTestSubscriptionControl({
     );
   }
 
+  const revokeButton = (label: string, description: string) => (
+    <div className="mt-2 space-y-2">
+      <p className="text-xs text-amber-700">{description}</p>
+      <button
+        type="button"
+        disabled={isPending}
+        className="btn-secondary text-xs"
+        onClick={() => {
+          setError(null);
+          startTransition(async () => {
+            const res = await fetch(`/api/admin/users/${userId}/test-subscription`, {
+              method: "DELETE",
+            });
+            if (!res.ok) {
+              setError(`Couldn't revoke ${label.toLowerCase()}.`);
+              return;
+            }
+            router.refresh();
+          });
+        }}
+      >
+        {isPending ? "Revoking…" : `Revoke ${label.toLowerCase()}`}
+      </button>
+    </div>
+  );
+
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
       <p className="text-xs font-medium text-gray-400">Testing tools</p>
-      {subscriptionKind === "test" ? (
-        <div className="mt-2 space-y-2">
-          <p className="text-xs text-amber-700">
-            This is a test grant (not a real Stripe subscription) — remember to revoke it when
-            you&apos;re done testing.
-          </p>
-          <button
-            type="button"
-            disabled={isPending}
-            className="btn-secondary text-xs"
-            onClick={() => {
-              setError(null);
-              startTransition(async () => {
-                const res = await fetch(`/api/admin/users/${userId}/test-subscription`, {
-                  method: "DELETE",
-                });
-                if (!res.ok) {
-                  setError("Couldn't revoke test subscription.");
-                  return;
-                }
-                router.refresh();
-              });
-            }}
-          >
-            {isPending ? "Revoking…" : "Revoke test subscription"}
-          </button>
-        </div>
+      {subscriptionKind === "trial" ? (
+        revokeButton(
+          "free trial",
+          "The user started this themselves (self-serve free trial, no payment) — revoke it to end their access early.",
+        )
+      ) : subscriptionKind === "test" ? (
+        revokeButton(
+          "test subscription",
+          "This is a test grant (not a real Stripe subscription) — remember to revoke it when you're done testing.",
+        )
       ) : (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
