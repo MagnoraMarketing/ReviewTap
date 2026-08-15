@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/current-user";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const currentUser = await getCurrentUser();
@@ -22,6 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <span className="hidden text-sm text-gray-500 sm:inline">
               {currentUser.profile?.business_name ?? currentUser.email}
             </span>
+            <LanguageSwitcher />
             <form action="/auth/signout" method="POST">
               <button type="submit" className="btn-ghost text-sm">
                 Log out

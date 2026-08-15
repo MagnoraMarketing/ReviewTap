@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { signUp, type AuthActionState } from "./actions";
+import { SUPPORTED_LANGUAGES, getCurrentLanguage, setLanguage } from "@/lib/i18n";
 
 const initialState: AuthActionState = {};
 
@@ -16,9 +18,34 @@ function SubmitButton() {
 
 export function SignupForm() {
   const [state, formAction] = useFormState(signUp, initialState);
+  const [language, setLanguageState] = useState("en");
+
+  useEffect(() => {
+    setLanguageState(getCurrentLanguage());
+  }, []);
 
   return (
     <form action={formAction} className="mt-6 space-y-4">
+      <div>
+        <label className="label" htmlFor="language">
+          Dashboard language
+        </label>
+        <select
+          id="language"
+          value={language}
+          onChange={(e) => {
+            setLanguageState(e.target.value);
+            setLanguage(e.target.value);
+          }}
+          className="input notranslate"
+        >
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <div>
         <label className="label" htmlFor="business_name">
           Business name

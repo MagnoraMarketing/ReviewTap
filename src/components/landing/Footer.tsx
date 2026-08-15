@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 const PLATFORM_LINKS = [
   { href: "/google-reviews", label: "Google Reviews" },
@@ -16,6 +17,9 @@ export function Footer() {
         <div>
           <Logo className="text-sm text-gray-500" />
           <p className="mt-4 text-xs text-gray-400">© {new Date().getFullYear()} ReviewTap</p>
+          <div className="mt-4">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <div>

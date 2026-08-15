@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2 font-semibold tracking-tight", className)}>
+    <span className={cn("notranslate inline-flex items-center gap-2 font-semibold tracking-tight", className)}>
       <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900 text-white">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
           <path
