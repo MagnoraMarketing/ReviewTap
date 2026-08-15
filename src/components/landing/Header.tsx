@@ -33,7 +33,7 @@ export function LandingHeader({ isLoggedIn }: { isLoggedIn: boolean }) {
             </Link>
           ) : (
             <>
-              <Link href="/login" className="hidden text-sm font-medium text-gray-600 hover:text-ink-900 sm:inline">
+              <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-ink-900">
                 Log in
               </Link>
               <Link href="/shop" className="btn-primary">
