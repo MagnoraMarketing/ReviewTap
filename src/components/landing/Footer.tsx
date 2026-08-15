@@ -30,8 +30,11 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Legal</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Company</p>
           <nav className="mt-3 flex flex-col gap-2 text-sm text-gray-500">
+            <Link href="/blog" className="hover:text-ink-900">
+              Blog
+            </Link>
             <Link href="/privacy" className="hover:text-ink-900">
               Privacy
             </Link>
