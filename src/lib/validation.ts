@@ -95,6 +95,26 @@ export const updateProfileSchema = z.object({
     .or(z.literal("")),
 });
 
+export const updateBrandingSchema = z.object({
+  logo_url: z
+    .string()
+    .trim()
+    .max(2048)
+    .refine((value) => value === "" || isSafeDestinationUrl(value), {
+      message: "Please enter a valid, secure (https://) URL",
+    })
+    .optional()
+    .or(z.literal("")),
+  accent_color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Please enter a hex color like #3A63F0")
+    .optional()
+    .or(z.literal("")),
+  welcome_message: z.string().trim().max(200).optional().or(z.literal("")),
+  thank_you_message: z.string().trim().max(200).optional().or(z.literal("")),
+});
+
 export const deviceNameSchema = z.string().trim().min(1, "Please enter a device name").max(100);
 
 export const DEVICE_VARIANTS = ["STANDEE_CARD", "DESK_TILE"] as const;
