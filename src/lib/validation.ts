@@ -119,6 +119,22 @@ const destinationEntrySchema = z.object({
  * Pro devices let visitors choose among several enabled platforms at scan
  * time. At least one enabled destination must have a real URL configured.
  */
+export const FEEDBACK_STATUSES = ["NEW", "READ", "RESOLVED"] as const;
+
+export const submitFeedbackSchema = z.object({
+  publicId: z.string().trim().min(1),
+  rating: z.number().int().min(1).max(5),
+  message: z.string().trim().max(2000).optional(),
+});
+
+export const attachFeedbackMessageSchema = z.object({
+  message: z.string().trim().min(1, "Please enter a message").max(2000),
+});
+
+export const updateFeedbackStatusSchema = z.object({
+  status: z.enum(FEEDBACK_STATUSES),
+});
+
 export const updateDestinationsSchema = z
   .object({ destinations: z.array(destinationEntrySchema).max(DESTINATION_TYPES.length) })
   .refine(

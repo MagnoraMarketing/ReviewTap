@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/devices", label: "Devices" },
+  { href: "/dashboard/feedback", label: "Feedback" },
   { href: "/dashboard/nfc", label: "NFC setup" },
   { href: "/dashboard/billing", label: "Billing" },
   { href: "/dashboard/settings", label: "Settings" },

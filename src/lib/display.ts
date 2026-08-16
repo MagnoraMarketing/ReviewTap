@@ -4,6 +4,7 @@ import type {
   SubscriptionStatus,
   DeviceVariant,
   DevicePlan,
+  FeedbackStatus,
 } from "@/types/database";
 
 export const DESTINATION_LABELS: Record<DestinationType, string> = {
@@ -85,4 +86,16 @@ export const SUBSCRIPTION_STATUS_TONE: Record<SubscriptionStatus, "green" | "amb
 export const DEVICE_VARIANT_LABELS: Record<DeviceVariant, string> = {
   STANDEE_CARD: "Standee Card",
   DESK_TILE: "Desk Tile",
+};
+
+export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {
+  NEW: "New",
+  READ: "Read",
+  RESOLVED: "Resolved",
+};
+
+export const FEEDBACK_STATUS_TONE: Record<FeedbackStatus, "green" | "amber" | "red" | "gray" | "blue"> = {
+  NEW: "blue",
+  READ: "amber",
+  RESOLVED: "green",
 };
