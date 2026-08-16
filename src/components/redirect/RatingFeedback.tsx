@@ -22,7 +22,15 @@ function StarIcon({ filled, className }: { filled: boolean; className?: string }
  * channel back to the business, never a substitute for a real public review
  * and never used to filter who reaches the public platforms.
  */
-export function RatingFeedback({ publicId }: { publicId: string }) {
+export function RatingFeedback({
+  publicId,
+  accentColor,
+  thankYouMessage,
+}: {
+  publicId: string;
+  accentColor?: string;
+  thankYouMessage?: string | null;
+}) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [feedbackId, setFeedbackId] = useState<string | null>(null);
@@ -80,6 +88,7 @@ export function RatingFeedback({ publicId }: { publicId: string }) {
             onClick={() => handleRate(value)}
             onMouseEnter={() => setHoverRating(value)}
             onMouseLeave={() => setHoverRating(0)}
+            style={accentColor ? { color: accentColor } : undefined}
             className="p-0.5 text-amber-400 transition-transform enabled:hover:scale-110 disabled:cursor-default"
           >
             <StarIcon filled={value <= (hoverRating || rating)} className="h-7 w-7" />
@@ -91,6 +100,9 @@ export function RatingFeedback({ publicId }: { publicId: string }) {
 
       {rating > 0 && !submitError && (
         <div className="mt-3">
+          <p className="text-center text-xs text-emerald-700">
+            {thankYouMessage || "Thanks for your feedback!"}
+          </p>
           {messageStatus === "sent" ? (
             <p className="text-center text-xs text-emerald-700">
               Thanks — we&apos;ve passed your message along.

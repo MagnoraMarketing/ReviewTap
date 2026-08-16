@@ -11,6 +11,10 @@ export interface RedirectTarget {
   destinations: DeviceDestination[];
   subscriptionActive: boolean;
   businessName: string | null;
+  logoUrl: string | null;
+  accentColor: string | null;
+  welcomeMessage: string | null;
+  thankYouMessage: string | null;
 }
 
 const PUBLIC_ID_PATTERN = /^RT-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{6,10}$/;
@@ -48,5 +52,9 @@ export async function getRedirectTarget(publicId: string): Promise<RedirectTarge
     destinations: (data.destinations ?? []) as DeviceDestination[],
     subscriptionActive: data.subscription_active,
     businessName: data.business_name,
+    logoUrl: data.logo_url,
+    accentColor: data.accent_color,
+    welcomeMessage: data.welcome_message,
+    thankYouMessage: data.thank_you_message,
   };
 }

@@ -43,16 +43,27 @@ export default async function ChooseDestinationPage({
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const shareUrl = `${appUrl}/r/${publicId}/choose`;
 
+  const accentColor = target.accentColor ?? undefined;
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-16">
-      <Logo className="mb-8 text-lg" />
-      <div className="card w-full max-w-sm text-center">
+      {target.logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={target.logoUrl} alt={target.businessName ?? "Logo"} className="mb-8 h-10 max-w-[200px] object-contain" />
+      ) : (
+        <Logo className="mb-8 text-lg" />
+      )}
+      <div
+        className="card w-full max-w-sm border-t-4 text-center"
+        style={{ borderTopColor: accentColor ?? "#e5e7eb" }}
+      >
         <h1 className="text-lg font-semibold text-ink-900">
           {target.businessName ? `Leave a review for ${target.businessName}` : "Leave a review"}
         </h1>
+        {target.welcomeMessage && <p className="mt-1 text-sm text-gray-500">{target.welcomeMessage}</p>}
 
         <div className="mt-4 border-b border-gray-100 pb-5">
-          <RatingFeedback publicId={publicId} />
+          <RatingFeedback publicId={publicId} accentColor={accentColor} thankYouMessage={target.thankYouMessage} />
         </div>
 
         <p className="mt-5 text-sm text-gray-500">

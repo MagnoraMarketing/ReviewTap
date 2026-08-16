@@ -44,6 +44,10 @@ export type Profile = {
   name: string | null;
   phone: string | null;
   role: UserRole;
+  logo_url: string | null;
+  accent_color: string | null;
+  welcome_message: string | null;
+  thank_you_message: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -180,6 +184,10 @@ export type Database = {
           destinations: DeviceDestination[];
           subscription_active: boolean;
           business_name: string | null;
+          logo_url: string | null;
+          accent_color: string | null;
+          welcome_message: string | null;
+          thank_you_message: string | null;
         }[];
       };
     };

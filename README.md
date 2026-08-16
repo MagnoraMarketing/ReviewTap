@@ -69,7 +69,7 @@ Never commit `.env.local` — it's already in `.gitignore`.
 
 ### Database migrations
 
-Three SQL files live in `supabase/migrations/`:
+Four SQL files live in `supabase/migrations/`:
 
 - `0001_init.sql` — enums, tables (`profiles`, `subscriptions`, `devices`, `scans`), triggers, RLS
   policies, and a column-protection trigger on `devices` (RLS is row-level only, so this trigger
@@ -80,6 +80,9 @@ Three SQL files live in `supabase/migrations/`:
 - `0003_feedback.sql` — the `feedback` table (star rating + optional message a guest leaves on the
   Pro chooser page), its RLS policies, and the same kind of column-protection trigger as `devices`
   so an owner can only ever change a feedback row's `status`, never the guest's rating or message.
+- `0004_branding.sql` — adds `logo_url`/`accent_color`/`welcome_message`/`thank_you_message` to
+  `profiles` (account-level branding for the Pro chooser page - see Dashboard → Settings), and
+  recreates `get_redirect_target` to return them.
 
 Apply them with the Supabase CLI:
 
