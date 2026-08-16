@@ -30,6 +30,8 @@ export type ScanType = "NFC" | "QR" | "DIRECT" | "UNKNOWN";
 
 export type UserRole = "USER" | "ADMIN";
 
+export type FeedbackStatus = "NEW" | "READ" | "RESOLVED";
+
 // NOTE: these are `type` aliases, not `interface`s, on purpose. Postgrest-js's
 // GenericTable constrains Row/Insert/Update to `Record<string, unknown>`, and
 // TypeScript only considers a plain object *type alias* (not an `interface`)
@@ -95,6 +97,16 @@ export type Scan = {
   device_type: string | null;
 };
 
+export type Feedback = {
+  id: string;
+  device_id: string;
+  rating: number;
+  message: string | null;
+  status: FeedbackStatus;
+  created_at: string;
+  updated_at: string;
+};
+
 type Empty = Record<string, never>;
 
 export type Database = {
@@ -133,6 +145,20 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scans_device_id_fkey";
+            columns: ["device_id"];
+            isOneToOne: false;
+            referencedRelation: "devices";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feedback: {
+        Row: Feedback;
+        Insert: Partial<Feedback> & { device_id: string; rating: number };
+        Update: Partial<Feedback>;
+        Relationships: [
+          {
+            foreignKeyName: "feedback_device_id_fkey";
             columns: ["device_id"];
             isOneToOne: false;
             referencedRelation: "devices";

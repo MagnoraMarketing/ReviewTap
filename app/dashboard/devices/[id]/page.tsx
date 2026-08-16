@@ -14,6 +14,7 @@ import { DestinationForm } from "@/components/dashboard/DestinationForm";
 import { MultiDestinationForm } from "@/components/dashboard/MultiDestinationForm";
 import { DeviceNameForm } from "@/components/dashboard/DeviceNameForm";
 import { NfcDeviceWriter } from "@/components/dashboard/NfcDeviceWriter";
+import { NfcTagReset } from "@/components/dashboard/NfcTagReset";
 import { ScansOverTimeChart } from "@/components/dashboard/charts/ScansOverTimeChart";
 import { ReviewsByPlatformChart } from "@/components/dashboard/charts/ReviewsByPlatformChart";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -189,13 +190,25 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
 
       <div className="card mt-6 border-red-100">
         <h2 className="text-sm font-semibold text-ink-900">Danger zone</h2>
+
         <p className="mt-1 text-xs text-gray-400">
-          Deleting this device frees up its slot immediately, so you can register a different NFC
-          tag or QR code right after — without needing to upgrade your plan first (only the number
-          of devices you have at once counts toward your plan&apos;s limit).
+          Erase everything written on the physical chip, so it can be safely reused for something
+          else. This only affects the chip itself — this device&apos;s settings are untouched, but
+          you&apos;ll need to write the chip again if you still want it to work with this device.
         </p>
         <div className="mt-3">
-          <DeleteDeviceButton deviceId={device.id} deviceName={device.name} />
+          <NfcTagReset />
+        </div>
+
+        <div className="mt-5 border-t border-red-100 pt-5">
+          <p className="text-xs text-gray-400">
+            Deleting this device frees up its slot immediately, so you can register a different NFC
+            tag or QR code right after — without needing to upgrade your plan first (only the number
+            of devices you have at once counts toward your plan&apos;s limit).
+          </p>
+          <div className="mt-3">
+            <DeleteDeviceButton deviceId={device.id} deviceName={device.name} />
+          </div>
         </div>
       </div>
     </div>

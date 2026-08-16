@@ -69,7 +69,7 @@ Never commit `.env.local` — it's already in `.gitignore`.
 
 ### Database migrations
 
-Two SQL files live in `supabase/migrations/`:
+Three SQL files live in `supabase/migrations/`:
 
 - `0001_init.sql` — enums, tables (`profiles`, `subscriptions`, `devices`, `scans`), triggers, RLS
   policies, and a column-protection trigger on `devices` (RLS is row-level only, so this trigger
@@ -77,6 +77,9 @@ Two SQL files live in `supabase/migrations/`:
   `status = SUSPENDED` via a direct REST call).
 - `0002_redirect_rpc.sql` — `get_redirect_target(text)`, a single-round-trip lookup used by the
   hot-path redirect route.
+- `0003_feedback.sql` — the `feedback` table (star rating + optional message a guest leaves on the
+  Pro chooser page), its RLS policies, and the same kind of column-protection trigger as `devices`
+  so an owner can only ever change a feedback row's `status`, never the guest's rating or message.
 
 Apply them with the Supabase CLI:
 

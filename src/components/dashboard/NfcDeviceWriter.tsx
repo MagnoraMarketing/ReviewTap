@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  NFC_TIMEOUT_MS,
+  NFC_TIMEOUT_MESSAGE,
+  nfcErrorMessage,
+  ReadyToScanVisual,
+  SuccessModal,
+} from "@/components/dashboard/nfc-shared";
 
 type WriteStatus = "idle" | "writing" | "written" | "error";
 type VerifyMethod = "nfc" | "qr" | null;
 type VerifyStatus = "idle" | "scanning" | "verified" | "mismatch" | "error";
-
-// Web NFC's scan()/write() promises never resolve or reject on their own if
-// no tag is ever presented - without a timeout, a phone that isn't actually
-// detecting the chip (NFC off, case blocking the antenna, wrong position on
-// the phone) just sits on "Hold your phone against the chip..." forever with
-// no feedback at all, which reads as "nothing happens".
-const NFC_TIMEOUT_MS = 20_000;
-const NFC_TIMEOUT_MESSAGE =
-  "No chip detected after 20 seconds. Make sure NFC is turned on in your phone's system settings, remove any case or wallet that might block the antenna, and hold the chip against the top-back of your phone without moving it.";
 
 function normalizeUrl(value: string): string {
   return value.trim().replace(/\/+$/, "").toLowerCase();
@@ -29,15 +27,6 @@ function decodeUrlRecord(message: NDEFMessage): string | null {
   }
 }
 
-function nfcErrorMessage(error: unknown): string {
-  const name = error instanceof DOMException ? error.name : "";
-  if (name === "AbortError") return "Cancelled.";
-  if (name === "NotAllowedError") return "NFC permission was denied. Allow NFC access and try again.";
-  if (name === "NotSupportedError") return "This device doesn't support NFC, or NFC is turned off.";
-  if (name === "NetworkError") return "No chip detected in time. Hold your phone against it and try again.";
-  return "Couldn't complete the NFC action. Please try again.";
-}
-
 /**
  * In-app NFC programming + verification. Web NFC (NDEFReader) is Chrome-on-
  * Android only, so this always coexists with the manual instructions used by
@@ -48,6 +37,7 @@ export function NfcDeviceWriter({ url }: { url: string }) {
   const [qrSupported, setQrSupported] = useState(false);
   const [writeStatus, setWriteStatus] = useState<WriteStatus>("idle");
   const [writeError, setWriteError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [verifyMethod, setVerifyMethod] = useState<VerifyMethod>(null);
   const [verifyStatus, setVerifyStatus] = useState<VerifyStatus>("idle");
@@ -99,6 +89,7 @@ export function NfcDeviceWriter({ url }: { url: string }) {
       const ndef = new NDEFReader();
       await ndef.write({ records: [{ recordType: "url", data: url }] }, { signal: controller.signal });
       setWriteStatus("written");
+      setShowSuccessModal(true);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         if (writeTimedOutRef.current) {
@@ -204,6 +195,7 @@ export function NfcDeviceWriter({ url }: { url: string }) {
 
   return (
     <div className="space-y-6">
+      {showSuccessModal && <SuccessModal onDone={() => setShowSuccessModal(false)} />}
       <div>
         <h3 className="text-sm font-semibold text-ink-900">1. Write the chip from your phone</h3>
         {nfcSupported ? (
@@ -214,12 +206,11 @@ export function NfcDeviceWriter({ url }: { url: string }) {
               </button>
             )}
             {writeStatus === "writing" && (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600">Hold your phone against the chip…</span>
-                <button type="button" onClick={cancelWrite} className="btn-secondary">
-                  Cancel
-                </button>
-              </div>
+              <ReadyToScanVisual
+                eyebrow="Writing NFC…"
+                hint="Move your phone slowly over the tag. Try the top, middle, and bottom of your device."
+                onCancel={cancelWrite}
+              />
             )}
             {writeStatus === "written" && (
               <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
@@ -277,12 +268,11 @@ export function NfcDeviceWriter({ url }: { url: string }) {
           )}
 
           {verifyStatus === "scanning" && verifyMethod === "nfc" && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Hold your phone against the chip…</span>
-              <button type="button" onClick={cancelVerify} className="btn-secondary">
-                Cancel
-              </button>
-            </div>
+            <ReadyToScanVisual
+              eyebrow="Verifying NFC…"
+              hint="Move your phone slowly over the tag to read what&apos;s written on it."
+              onCancel={cancelVerify}
+            />
           )}
 
           {verifyStatus === "scanning" && verifyMethod === "qr" && (

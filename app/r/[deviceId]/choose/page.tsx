@@ -4,6 +4,7 @@ import { getRedirectTarget } from "@/lib/redirect-target";
 import { Logo } from "@/components/ui/Logo";
 import { ShareButton } from "@/components/shop/ShareButton";
 import { DestinationChooserList } from "@/components/redirect/DestinationChooserList";
+import { RatingFeedback } from "@/components/redirect/RatingFeedback";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,12 @@ export default async function ChooseDestinationPage({
         <h1 className="text-lg font-semibold text-ink-900">
           {target.businessName ? `Leave a review for ${target.businessName}` : "Leave a review"}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+
+        <div className="mt-4 border-b border-gray-100 pb-5">
+          <RatingFeedback publicId={publicId} />
+        </div>
+
+        <p className="mt-5 text-sm text-gray-500">
           {enabled.length > 1
             ? "Choose where you'd like to leave a review — feel free to pick more than one."
             : "Choose where you'd like to leave it."}
